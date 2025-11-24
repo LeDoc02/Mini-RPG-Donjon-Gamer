@@ -1,0 +1,231 @@
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Mini RPG – Donjon Gamer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div id="app">
+    <!-- En-tête du site -->
+    <header class="site-header">
+      <h1>Mini RPG – Donjon Gamer</h1>
+    </header>
+
+    <main>
+      <!-- Barre de progression de création de personnage -->
+      <section id="builder-steps" class="panel" aria-label="Étapes de création du personnage">
+        <h2>Création du personnage</h2>
+        <nav class="builder-steps-nav" aria-label="Navigation dans les étapes">
+          <button class="builder-step-btn" data-step="1">1. Classe</button>
+          <button class="builder-step-btn" data-step="2">2. Caractéristiques</button>
+          <button class="builder-step-btn" data-step="3">3. Résumé</button>
+        </nav>
+      </section>
+
+      <!-- Étape 1 : Classe -->
+      <section id="hero-select" class="panel" aria-label="Choix de la classe">
+        <h2>Étape 1 – Choisir une classe</h2>
+        <p id="hero-description">Sélectionne un héros pour voir sa description.</p>
+        <div class="heroes">
+          <button class="hero-choice" data-hero="warrior">Guerrier</button>
+          <button class="hero-choice" data-hero="mage">Mage</button>
+          <button class="hero-choice" data-hero="rogue">Voleur</button>
+        </div>
+      </section>
+
+      <!-- Étape 2 : Caractéristiques -->
+      <section id="character-creation" class="panel hidden" aria-label="Répartition des caractéristiques">
+        <h2>Étape 2 – Caractéristiques</h2>
+        <p>Points à distribuer : <span id="cc-points">27</span></p>
+
+        <div class="cc-grid">
+          <!-- FOR -->
+          <div class="cc-row">
+            <label for="cc-STR">FOR</label>
+            <div class="cc-controls">
+              <button class="cc-minus" data-stat="STR">-</button>
+              <span id="cc-STR">8</span>
+              <button class="cc-plus" data-stat="STR">+</button>
+            </div>
+          </div>
+
+          <!-- DEX -->
+          <div class="cc-row">
+            <label for="cc-DEX">DEX</label>
+            <div class="cc-controls">
+              <button class="cc-minus" data-stat="DEX">-</button>
+              <span id="cc-DEX">8</span>
+              <button class="cc-plus" data-stat="DEX">+</button>
+            </div>
+          </div>
+
+          <!-- INT -->
+          <div class="cc-row">
+            <label for="cc-INT">INT</label>
+            <div class="cc-controls">
+              <button class="cc-minus" data-stat="INT">-</button>
+              <span id="cc-INT">8</span>
+              <button class="cc-plus" data-stat="INT">+</button>
+            </div>
+          </div>
+
+          <!-- VIT -->
+          <div class="cc-row">
+            <label for="cc-VIT">VIT</label>
+            <div class="cc-controls">
+              <button class="cc-minus" data-stat="VIT">-</button>
+              <span id="cc-VIT">8</span>
+              <button class="cc-plus" data-stat="VIT">+</button>
+            </div>
+          </div>
+        </div>
+
+        <button id="cc-validate" class="primary">Valider les caractéristiques</button>
+      </section>
+
+      <!-- Étape 3 : Résumé -->
+      <section id="builder-summary" class="panel hidden" aria-label="Résumé du personnage">
+        <h2>Étape 3 – Résumé du personnage</h2>
+        <div class="summary-grid">
+          <div>
+            <p><strong>Classe :</strong> <span id="summary-class">-</span></p>
+            <p><strong>FOR :</strong> <span id="summary-STR">-</span></p>
+            <p><strong>DEX :</strong> <span id="summary-DEX">-</span></p>
+            <p><strong>INT :</strong> <span id="summary-INT">-</span></p>
+            <p><strong>VIT :</strong> <span id="summary-VIT">-</span></p>
+          </div>
+        </div>
+
+        <button id="btn-start-game" class="primary wide">Lancer l'aventure</button>
+      </section>
+
+      <!-- ZONE DE JEU -->
+      <section id="game" class="hidden" aria-label="Zone de jeu du donjon">
+        <!-- Haut : Donjon / Ennemi / Quêtes -->
+        <div class="top-grid">
+          <!-- Donjon -->
+          <section class="panel" aria-label="Donjon">
+            <h2>Donjon</h2>
+            <div id="minimap-grid" class="minimap-grid" aria-label="Carte du donjon"></div>
+            <p class="room-info">
+              <span>Étage : <span id="floor-number">1</span></span>
+              <span>• Salle : <span id="room-coord">3,3</span></span>
+            </p>
+          </section>
+
+          <!-- Ennemi -->
+          <section class="panel" aria-label="Ennemi actuel">
+            <h2>Ennemi</h2>
+            <p>Nom : <span id="enemy-name">Aucun</span></p>
+            <p>
+              HP :
+              <span id="enemy-hp">0</span> /
+              <span id="enemy-hp-max">0</span>
+            </p>
+          </section>
+
+          <!-- Quêtes -->
+          <section class="panel" aria-label="Quêtes en cours">
+            <h2>Quêtes</h2>
+            <ul id="quest-list"></ul>
+          </section>
+        </div>
+
+        <!-- Panneau Héros -->
+        <section class="panel hero-panel" aria-label="Statut du héros">
+          <div class="hero-header">
+            <div>
+              <h2>
+                <span id="hero-name" class="hero-name-clickable">(Héros)</span>
+              </h2>
+              <p class="hero-level">
+                Niv <span id="hero-level">1</span> • XP
+                <span id="hero-xp">0</span>/<span id="hero-xp-next">50</span>
+              </p>
+              <p class="hero-hp">
+                HP :
+                <span id="hero-hp">0</span> /
+                <span id="hero-hp-max">0</span>
+              </p>
+            </div>
+            <div class="hero-meta">
+              <p>
+                Or : <span id="coins-gold">0</span> • Argent :
+                <span id="coins-silver">0</span> • Bronze :
+                <span id="coins-bronze">0</span>
+              </p>
+              <p>
+                Sac : <span id="inventory-weight" class="inventory-weight">0/0</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="hero-middle">
+            <div class="equip-block">
+              <h3>Équipement</h3>
+              <p>Arme : <span id="equip-weapon">Aucune</span></p>
+              <p>Armure : <span id="equip-armor">Aucune</span></p>
+            </div>
+
+            <div class="hero-actions">
+              <button id="btn-attack">Attaquer</button>
+              <button id="btn-potion">Potion</button>
+              <button id="btn-cast">Sort</button>
+              <button id="btn-rest">Repos (tente)</button>
+              <button id="btn-equip">Auto-équiper</button>
+              <button id="btn-shop">Marchand</button>
+              <button id="btn-toggle-inventory" class="secondary">
+                Inventaire
+              </button>
+            </div>
+          </div>
+
+          <div class="hero-bottom two-cols-stack">
+            <div>
+              <h3>Caractéristiques &amp; Défense</h3>
+              <ul id="stats-list"></ul>
+            </div>
+            <div>
+              <h3>Compétences</h3>
+              <p>Points dispo : <span id="skill-points">0</span></p>
+              <ul id="skills-list"></ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Inventaire -->
+        <section id="inventory-panel" class="panel inventory-panel hidden" aria-label="Inventaire complet">
+          <div class="inventory-header">
+            <h2>Inventaire complet</h2>
+            <button id="btn-close-inventory">Fermer</button>
+          </div>
+          <ul id="inventory-list"></ul>
+        </section>
+
+        <!-- Panneau contextuel (sorts, marchand, etc.) -->
+        <section id="modal-panel" class="panel hidden" aria-label="Panneau contextuel">
+          <div class="modal-header">
+            <h2 id="modal-title">Titre</h2>
+            <button id="modal-close" class="secondary">Fermer</button>
+          </div>
+          <div id="modal-body"></div>
+        </section>
+
+        <!-- Journal -->
+        <section class="panel" aria-label="Journal d'aventure">
+          <h2>Journal</h2>
+          <div id="log"></div>
+          <button id="btn-restart" class="restart">Relancer</button>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <!-- Script principal du jeu -->
+  <script src="script.js"></script>
+</body>
+
+</html>

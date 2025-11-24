@@ -1,0 +1,421 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #020617;
+  color: #e5e7eb;
+  display: flex;
+  justify-content: center;
+  padding: 24px 12px;
+}
+
+/* Conteneur principal */
+#app {
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* === NOUVEAU : header & main === */
+
+.site-header {
+  margin-bottom: 1.5rem;
+}
+
+.site-header h1 {
+  text-align: center;
+  margin: 0 0 20px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Panneaux généraux */
+
+.panel {
+  background-color: #111827;
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid #1f2937;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  margin-bottom: 1.75rem; /* espace entre les blocs */
+}
+
+.panel h2 {
+  margin-top: 0;
+}
+
+/* Builder steps */
+
+.builder-steps-nav {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.builder-step-btn {
+  flex: 1;
+  padding: 6px 8px;
+  background: #030712;
+  border-radius: 999px;
+  border: 1px solid #1f2937;
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.builder-step-btn.active {
+  background: #3b82f6;
+  border-color: #60a5fa;
+}
+
+.builder-step-btn.completed {
+  background: #15803d;
+  border-color: #22c55e;
+}
+
+/* Heroes */
+
+.heroes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* Boutons généraux */
+
+button {
+  background: #3b82f6;
+  border: none;
+  border-radius: 0.35rem;
+  color: white;
+  padding: 6px 12px;
+  margin: 4px 4px 0 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+button:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  background: #4b5563;
+  cursor: not-allowed;
+  transform: none;
+}
+
+button.primary {
+  background: #2563eb;
+  font-weight: 600;
+}
+
+button.primary.wide {
+  width: 100%;
+  margin-top: 8px;
+}
+
+button.secondary {
+  background: #0f172a;
+}
+
+button.secondary:hover {
+  background: #1f2937;
+}
+
+button.restart {
+  margin-top: 12px;
+  width: 100%;
+  background: #10b981;
+  font-weight: bold;
+}
+
+button.restart:hover {
+  background: #059669;
+}
+
+/* Création de perso */
+
+.cc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px 18px;
+  margin-top: 10px;
+}
+
+.cc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cc-row label {
+  font-weight: 500;
+}
+
+.cc-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cc-controls span {
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Résumé */
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* Top grid : Donjon / Ennemi / Quêtes */
+
+.top-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1.1fr 1.3fr;
+  gap: 1.75rem;
+  align-items: stretch;
+}
+
+.top-grid .panel {
+  margin-bottom: 0; /* déjà géré par le conteneur principal */
+}
+
+.room-info {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #9ca3af;
+  display: flex;
+  gap: 8px;
+}
+
+/* Minimap */
+
+.minimap-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 18px);
+  grid-template-rows: repeat(6, 18px);
+  gap: 3px;
+  margin-top: 6px;
+}
+
+.minimap-cell {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  background: #020617;
+  border: 1px solid #4b5563;
+  cursor: pointer;
+}
+
+.minimap-cell.discovered {
+  background: #1f2937;
+}
+
+.minimap-cell.cleared {
+  background: #047857;
+}
+
+.minimap-cell.current {
+  border: 2px solid #facc15;
+}
+
+/* Héros */
+
+.hero-panel {
+  margin-top: 1.5rem;
+}
+
+.hero-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.hero-level,
+.hero-hp {
+  margin: 4px 0;
+}
+
+.hero-meta {
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.hero-middle {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.equip-block {
+  min-width: 180px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.hero-bottom {
+  margin-top: 16px;
+}
+
+.two-cols-stack {
+  display: grid;
+  grid-template-columns: 1.1fr 1.2fr;
+  gap: 18px;
+}
+
+/* Stats & compétences */
+
+#stats-list,
+#skills-list {
+  padding-left: 18px;
+  margin: 6px 0 0;
+}
+
+.skill-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.skill-item button {
+  margin: 0;
+  padding: 2px 8px;
+}
+
+/* Inventaire */
+
+.inventory-panel {
+  margin-top: -0.5rem;
+}
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+#inventory-list {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+.inventory-item {
+  font-size: 0.9rem;
+  padding: 3px 5px;
+  border-radius: 4px;
+  margin-bottom: 3px;
+}
+
+.inventory-item.equipment-item {
+  cursor: pointer;
+  background: #020617;
+  border: 1px solid #4b5563;
+}
+
+.inventory-item.equipment-item:hover {
+  background: #111827;
+}
+
+.inventory-item.potion {
+  color: #bbf7d0;
+}
+
+.inventory-item.tent {
+  color: #e5e7eb;
+}
+
+.inventory-weight {
+  font-weight: 600;
+}
+
+/* Journal */
+
+#log {
+  min-height: 80px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+}
+
+#log p {
+  margin: 3px 0;
+}
+
+/* Divers */
+
+.hero-name-clickable {
+  text-decoration: underline;
+  cursor: pointer;
+  color: #93c5fd;
+}
+
+.hero-name-clickable:hover {
+  color: #bfdbfe;
+}
+
+.completed {
+  color: #10b981;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-meta {
+    text-align: left;
+  }
+
+  .hero-middle {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .two-cols-stack {
+    grid-template-columns: 1fr;
+  }
+}
