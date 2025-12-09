@@ -19,20 +19,22 @@
       <section id="builder-steps" class="panel" aria-label="Étapes de création du personnage">
         <h2>Création du personnage</h2>
         <nav class="builder-steps-nav" aria-label="Navigation dans les étapes">
-          <button class="builder-step-btn" data-step="1">1. Classe</button>
-          <button class="builder-step-btn" data-step="2">2. Caractéristiques</button>
-          <button class="builder-step-btn" data-step="3">3. Résumé</button>
+          <button type="button" class="builder-step-btn" data-step="1">1. Classe</button>
+          <button type="button" class="builder-step-btn" data-step="2">2. Caractéristiques</button>
+          <button type="button" class="builder-step-btn" data-step="3">3. Résumé</button>
         </nav>
       </section>
 
       <!-- Étape 1 : Classe -->
       <section id="hero-select" class="panel" aria-label="Choix de la classe">
         <h2>Étape 1 – Choisir une classe</h2>
-        <p id="hero-description">Sélectionne un héros pour voir sa description.</p>
+        <p id="hero-description" role="status" aria-live="polite">
+          Sélectionne un héros pour voir sa description.
+        </p>
         <div class="heroes">
-          <button class="hero-choice" data-hero="warrior">Guerrier</button>
-          <button class="hero-choice" data-hero="mage">Mage</button>
-          <button class="hero-choice" data-hero="rogue">Voleur</button>
+          <button type="button" class="hero-choice" data-hero="warrior">Guerrier</button>
+          <button type="button" class="hero-choice" data-hero="mage">Mage</button>
+          <button type="button" class="hero-choice" data-hero="rogue">Voleur</button>
         </div>
       </section>
 
@@ -46,9 +48,9 @@
           <div class="cc-row">
             <label for="cc-STR">FOR</label>
             <div class="cc-controls">
-              <button class="cc-minus" data-stat="STR">-</button>
+              <button type="button" class="cc-minus" data-stat="STR">-</button>
               <span id="cc-STR">8</span>
-              <button class="cc-plus" data-stat="STR">+</button>
+              <button type="button" class="cc-plus" data-stat="STR">+</button>
             </div>
           </div>
 
@@ -56,9 +58,9 @@
           <div class="cc-row">
             <label for="cc-DEX">DEX</label>
             <div class="cc-controls">
-              <button class="cc-minus" data-stat="DEX">-</button>
+              <button type="button" class="cc-minus" data-stat="DEX">-</button>
               <span id="cc-DEX">8</span>
-              <button class="cc-plus" data-stat="DEX">+</button>
+              <button type="button" class="cc-plus" data-stat="DEX">+</button>
             </div>
           </div>
 
@@ -66,9 +68,9 @@
           <div class="cc-row">
             <label for="cc-INT">INT</label>
             <div class="cc-controls">
-              <button class="cc-minus" data-stat="INT">-</button>
+              <button type="button" class="cc-minus" data-stat="INT">-</button>
               <span id="cc-INT">8</span>
-              <button class="cc-plus" data-stat="INT">+</button>
+              <button type="button" class="cc-plus" data-stat="INT">+</button>
             </div>
           </div>
 
@@ -76,14 +78,14 @@
           <div class="cc-row">
             <label for="cc-VIT">VIT</label>
             <div class="cc-controls">
-              <button class="cc-minus" data-stat="VIT">-</button>
+              <button type="button" class="cc-minus" data-stat="VIT">-</button>
               <span id="cc-VIT">8</span>
-              <button class="cc-plus" data-stat="VIT">+</button>
+              <button type="button" class="cc-plus" data-stat="VIT">+</button>
             </div>
           </div>
         </div>
 
-        <button id="cc-validate" class="primary">Valider les caractéristiques</button>
+        <button type="button" id="cc-validate" class="primary">Valider les caractéristiques</button>
       </section>
 
       <!-- Étape 3 : Résumé -->
@@ -99,7 +101,7 @@
           </div>
         </div>
 
-        <button id="btn-start-game" class="primary wide">Lancer l'aventure</button>
+        <button type="button" id="btn-start-game" class="primary wide">Lancer l'aventure</button>
       </section>
 
       <!-- ZONE DE JEU -->
@@ -171,13 +173,13 @@
             </div>
 
             <div class="hero-actions">
-              <button id="btn-attack">Attaquer</button>
-              <button id="btn-potion">Potion</button>
-              <button id="btn-cast">Sort</button>
-              <button id="btn-rest">Repos (tente)</button>
-              <button id="btn-equip">Auto-équiper</button>
-              <button id="btn-shop">Marchand</button>
-              <button id="btn-toggle-inventory" class="secondary">
+              <button type="button" id="btn-attack">Attaquer</button>
+              <button type="button" id="btn-potion">Potion</button>
+              <button type="button" id="btn-cast">Sort</button>
+              <button type="button" id="btn-rest">Repos (tente)</button>
+              <button type="button" id="btn-equip">Auto-équiper</button>
+              <button type="button" id="btn-shop">Marchand</button>
+              <button type="button" id="btn-toggle-inventory" class="secondary">
                 Inventaire
               </button>
             </div>
@@ -200,7 +202,7 @@
         <section id="inventory-panel" class="panel inventory-panel hidden" aria-label="Inventaire complet">
           <div class="inventory-header">
             <h2>Inventaire complet</h2>
-            <button id="btn-close-inventory">Fermer</button>
+            <button type="button" id="btn-close-inventory">Fermer</button>
           </div>
           <ul id="inventory-list"></ul>
         </section>
@@ -209,7 +211,7 @@
         <section id="modal-panel" class="panel hidden" aria-label="Panneau contextuel">
           <div class="modal-header">
             <h2 id="modal-title">Titre</h2>
-            <button id="modal-close" class="secondary">Fermer</button>
+            <button type="button" id="modal-close" class="secondary">Fermer</button>
           </div>
           <div id="modal-body"></div>
         </section>
@@ -218,7 +220,7 @@
         <section class="panel" aria-label="Journal d'aventure">
           <h2>Journal</h2>
           <div id="log"></div>
-          <button id="btn-restart" class="restart">Relancer</button>
+          <button type="button" id="btn-restart" class="restart">Relancer</button>
         </section>
       </section>
     </main>

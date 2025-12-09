@@ -291,6 +291,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const summaryVitSpan = document.getElementById("summary-VIT");
   const btnStartGame = document.getElementById("btn-start-game");
 
+  // --- Modal global (sorts, marchand, etc.) ---
+  function openModal(title, contentNode) {
+    if (!modalPanel) return;
+    modalTitle.textContent = title || "";
+    modalBody.innerHTML = "";
+    if (contentNode) {
+      modalBody.appendChild(contentNode);
+    }
+    modalPanel.classList.remove("hidden");
+  }
+
+  function closeModal() {
+    if (!modalPanel) return;
+    modalPanel.classList.add("hidden");
+    if (modalBody) modalBody.innerHTML = "";
+  }
+
+  if (modalCloseBtn) {
+    modalCloseBtn.addEventListener("click", closeModal);
+  }
+
   // --- LOG ---
   function addLog(message) {
     const p = document.createElement("p");
@@ -347,27 +368,6 @@ document.addEventListener("DOMContentLoaded", () => {
       coinsSilverSpan.textContent = "0";
       coinsBronzeSpan.textContent = "0";
       return;
-    }
-
-    // --- Panneau contextuel (modal simple in-game) ---
-    function openModal(title, contentNode) {
-      if (!modalPanel) return;
-      modalTitle.textContent = title || "";
-      modalBody.innerHTML = "";
-      if (contentNode) {
-        modalBody.appendChild(contentNode);
-      }
-      modalPanel.classList.remove("hidden");
-    }
-
-    function closeModal() {
-      if (!modalPanel) return;
-      modalPanel.classList.add("hidden");
-      if (modalBody) modalBody.innerHTML = "";
-    }
-
-    if (modalCloseBtn) {
-      modalCloseBtn.addEventListener("click", closeModal);
     }
 
     const c = gameState.hero.coins;
@@ -1132,6 +1132,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const next = currentFloor + 1;
       gameState.dungeon = Dungeon.createDungeon(next);
+      gameState.enemy = null;
       addLog(`Tu montes à l'étage ${next}. Les ennemis seront plus dangereux…`);
       Dungeon.renderMinimap();
       Hero.updateView();
@@ -1380,6 +1381,8 @@ document.addEventListener("DOMContentLoaded", () => {
               );
               if (goUp) {
                 Dungeon.goToNextFloor();
+                // Très important : on NE fait pas endBattle() après avoir lancé un nouveau combat.
+                return true;
               } else {
                 addLog(
                   "Tu restes pour l'instant à cet étage. Tu pourras revenir à cette salle pour monter."
@@ -1518,6 +1521,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       btnAttack.disabled = false;
       btnPotion.disabled = false;
+
+      // Garde-fou : si pour une raison quelconque aucun ennemi n'a été créé
+      if (!gameState.enemy) {
+        addLog("Aucun ennemi ne se trouve dans cette salle pour l'instant.");
+        Combat.renderEnemy();
+        Inventory.render();
+        Dungeon.renderMinimap();
+        return;
+      }
 
       addLog(
         `Un ${gameState.enemy.name} apparaît ! HP ${gameState.enemy.maxHp}, ATK approximative ${gameState.enemy.atk}.`
@@ -1817,6 +1829,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const s = parseInt(btn.dataset.step, 10);
       btn.classList.toggle("active", s === step);
       btn.classList.toggle("completed", s < step);
+
+      if (s === step) {
+        btn.setAttribute("aria-current", "step");
+      } else {
+        btn.removeAttribute("aria-current");
+      }
     });
 
     if (step === 1) {
