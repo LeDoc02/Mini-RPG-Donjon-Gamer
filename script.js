@@ -1351,15 +1351,74 @@ document.addEventListener("DOMContentLoaded", () => {
       const d = gameState.dungeon;
       const room = Dungeon.getRoom(d.currentX, d.currentY);
 
+      // --- Mort du héros ---
       if (hero.hp <= 0) {
         hero.hp = 0;
-        addLog("Game Over… le héros est vaincu 💀");
+
+        const hasPhoenix = gameState.inventory.some(
+          (it) =>
+            typeof it === "object" &&
+            (it.name === "Aile de Phénix" ||
+              (it.type === "consumable" && it.special === "roomReset"))
+        );
+
+        if (hasPhoenix) {
+          addLog(
+            "Tu t'effondres, ton corps lourd touche le sol... Mais quelque chose brûle dans ton sac : l'Aile de Phénix s'éveille. 🪽"
+          );
+
+          const useNow = window.confirm(
+            "Tu es mort...\n\n" +
+              "Mais l'Aile de Phénix peut te ramener en te rendant environ 65% de tes HP max.\n\n" +
+              "OK = Utiliser l'Aile de Phénix maintenant\n" +
+              "Annuler = Refuser et accepter le Game Over"
+          );
+
+          if (useNow) {
+            const index = gameState.inventory.findIndex(
+              (it) =>
+                typeof it === "object" &&
+                (it.name === "Aile de Phénix" ||
+                  (it.type === "consumable" && it.special === "roomReset"))
+            );
+
+            if (index !== -1) {
+              gameState.inventory.splice(index, 1);
+
+              const maxHp = hero.maxHp || 1;
+              const healAmount = Math.floor(maxHp * 0.65);
+              const previous = hero.hp;
+
+              hero.hp = Math.min(hero.hp + healAmount, maxHp);
+
+              addLog(
+                `🔥 L'Aile de Phénix se consume, t'enveloppe de flammes et te rend ${
+                  hero.hp - previous
+                } HP (≈65% de tes HP max).`
+              );
+
+              Hero.updateView();
+              Inventory.render();
+            }
+
+            Dungeon.resetCurrentRoom();
+            return true;
+          }
+
+          addLog(
+            "Tu refuses le pouvoir de l'Aile de Phénix... et sombres dans l'oubli. 💀"
+          );
+        } else {
+          addLog("Game Over… le héros est vaincu 💀");
+        }
+
         gameState.stats.defeats++;
         Combat.endBattle();
         Quests.checkAll();
         return true;
       }
 
+      // --- Mort de l'ennemi ---
       if (enemy.hp <= 0) {
         enemy.hp = 0;
         addLog(`Victoire ! ${enemy.name} est vaincu 🏆`);
@@ -1381,7 +1440,6 @@ document.addEventListener("DOMContentLoaded", () => {
               );
               if (goUp) {
                 Dungeon.goToNextFloor();
-                // Très important : on NE fait pas endBattle() après avoir lancé un nouveau combat.
                 return true;
               } else {
                 addLog(
@@ -1522,7 +1580,6 @@ document.addEventListener("DOMContentLoaded", () => {
       btnAttack.disabled = false;
       btnPotion.disabled = false;
 
-      // Garde-fou : si pour une raison quelconque aucun ennemi n'a été créé
       if (!gameState.enemy) {
         addLog("Aucun ennemi ne se trouve dans cette salle pour l'instant.");
         Combat.renderEnemy();
@@ -1761,6 +1818,298 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // --- ADMIN / DEBUG : commandes secrètes dans le journal ---
+  // Usage : double-clic sur le journal (#log) → saisir une commande /admin ...
+
+  function handleAdminCommand(input) {
+    if (!input) return;
+    input = input.trim();
+
+    if (!input.startsWith("/admin")) {
+      addLog("[ADMIN] Commande ignorée (ne commence pas par /admin).");
+      return;
+    }
+
+    if (!gameState.hero) {
+      addLog(
+        "[ADMIN] Aucun héros actif. Crée un personnage avant d'utiliser les commandes admin."
+      );
+      return;
+    }
+
+    const parts = input.split(/\s+/);
+    const action = (parts[1] || "help").toLowerCase();
+    const args = parts.slice(2);
+
+    const getCount = (defaultValue = 1) => {
+      if (!args[0]) return defaultValue;
+      const n = parseInt(args[0], 10);
+      return Number.isNaN(n) || n <= 0 ? defaultValue : n;
+    };
+
+    switch (action) {
+      case "help":
+        addLog(
+          "[ADMIN] Commandes : " +
+            "/admin potion [n], " +
+            "/admin phoenix [n], " +
+            "/admin tent [n], " +
+            "/admin gold [n], " +
+            "/admin equip random, " +
+            "/admin hp <n|full>, " +
+            "/admin xp n, " +
+            "/admin level n, " +
+            "/admin floor n, " +
+            "/admin tp x y, " +
+            "/admin kill, " +
+            "/admin spawn enemy|boss"
+        );
+        break;
+
+      case "potion": {
+        const count = getCount(1);
+        for (let i = 0; i < count; i++) {
+          Inventory.tryAdd("Potion de soin");
+        }
+        addLog(
+          `[ADMIN] ${count} potion(s) de soin ajoutée(s) à l'inventaire.`
+        );
+        Inventory.render();
+        break;
+      }
+
+      case "phoenix": {
+        const count = getCount(1);
+        for (let i = 0; i < count; i++) {
+          const phoenixItem = {
+            name: "Aile de Phénix",
+            type: "consumable",
+            special: "roomReset"
+          };
+          Inventory.tryAdd(phoenixItem);
+        }
+        addLog(
+          `[ADMIN] ${count} Aile(s) de Phénix ajoutée(s) à l'inventaire.`
+        );
+        Inventory.render();
+        break;
+      }
+
+      case "tent": {
+        const count = getCount(1);
+        for (let i = 0; i < count; i++) {
+          Inventory.tryAdd({
+            type: "tent",
+            name: "Tente de campement (admin)"
+          });
+        }
+        addLog(`[ADMIN] ${count} tente(s) ajoutée(s) à l'inventaire.`);
+        Inventory.render();
+        break;
+      }
+
+      case "gold": {
+        const amount = getCount(100);
+        addCoinsBronze(amount);
+        addLog(
+          `[ADMIN] ${amount} pièces de bronze ajoutées (converties en or/argent/bronze).`
+        );
+        break;
+      }
+
+      case "equip": {
+        const sub = (args[0] || "").toLowerCase();
+        if (sub === "random") {
+          const equipPool = [
+            ...lootTable,
+            ...rareLootTable.filter((it) => it.slot)
+          ];
+          const base =
+            equipPool[Math.floor(Math.random() * equipPool.length)];
+          const newItem = { ...base };
+          Inventory.tryAdd(newItem);
+          addLog(
+            `[ADMIN] Équipement ajouté : ${Inventory.describeItem(newItem)}.`
+          );
+          Inventory.render();
+        } else {
+          addLog(
+            "[ADMIN] Utilisation : /admin equip random (pour un équipement aléatoire)."
+          );
+        }
+        break;
+      }
+
+      case "hp": {
+        const hero = gameState.hero;
+        if (!hero) break;
+        if (!args[0]) {
+          addLog("[ADMIN] Utilisation : /admin hp <n|full>");
+          break;
+        }
+        if (args[0].toLowerCase() === "full") {
+          hero.hp = hero.maxHp;
+          addLog("[ADMIN] HP réglés à 100%.");
+        } else {
+          const value = parseInt(args[0], 10);
+          if (Number.isNaN(value)) {
+            addLog("[ADMIN] Valeur de HP invalide.");
+            break;
+          }
+          hero.hp = Math.max(0, Math.min(hero.maxHp, value));
+          addLog(`[ADMIN] HP réglés à ${hero.hp}.`);
+        }
+        Hero.updateView();
+        break;
+      }
+
+      case "xp": {
+        const amount = getCount(0);
+        if (amount <= 0) {
+          addLog("[ADMIN] Utilisation : /admin xp n (n > 0).");
+          break;
+        }
+        Hero.gainXp(amount);
+        addLog(`[ADMIN] +${amount} XP ajoutés.`);
+        break;
+      }
+
+      case "level": {
+        const hero = gameState.hero;
+        if (!hero) break;
+        const value = getCount(1);
+        const newLevel = Math.max(1, value);
+        hero.level = newLevel;
+
+        // recalcul approximatif de xpNext
+        hero.xp = 0;
+        let xpNext = 50;
+        for (let i = 1; i < newLevel; i++) {
+          xpNext = Math.round(xpNext * 1.4);
+        }
+        hero.xpNext = xpNext;
+
+        addLog(
+          `[ADMIN] Niveau du héros fixé à ${hero.level} (XP remis à 0, prochain palier ≈ ${hero.xpNext}).`
+        );
+        Hero.updateView();
+        break;
+      }
+
+      case "floor": {
+        const floor = getCount(1);
+        if (floor < 1 || floor > maxFloor) {
+          addLog(
+            `[ADMIN] Étages valides : 1 à ${maxFloor}. Exemple : /admin floor 2`
+          );
+          break;
+        }
+        Dungeon.initFloor(floor);
+        gameState.enemy = null;
+        addLog(`[ADMIN] Donjon réinitialisé sur l'étage ${floor}.`);
+        Hero.updateView();
+        break;
+      }
+
+      case "tp": {
+        const d = gameState.dungeon;
+        if (!d) {
+          addLog("[ADMIN] Donjon non initialisé.");
+          break;
+        }
+        if (args.length < 2) {
+          addLog("[ADMIN] Utilisation : /admin tp x y");
+          break;
+        }
+        const x = parseInt(args[0], 10);
+        const y = parseInt(args[1], 10);
+        if (
+          Number.isNaN(x) ||
+          Number.isNaN(y) ||
+          x < 0 ||
+          y < 0 ||
+          x >= d.width ||
+          y >= d.height
+        ) {
+          addLog(
+            `[ADMIN] Coordonnées invalides. x et y doivent être entre 0 et ${
+              d.width - 1
+            }.`
+          );
+          break;
+        }
+        d.currentX = x;
+        d.currentY = y;
+        const room = Dungeon.getRoom(x, y);
+        if (room && !room.discovered) {
+          room.discovered = true;
+          d.discoveredCount++;
+        }
+        Dungeon.renderMinimap();
+        addLog(`[ADMIN] Téléporté en salle (${x},${y}).`);
+        break;
+      }
+
+      case "kill": {
+        const enemy = gameState.enemy;
+        if (!enemy) {
+          addLog("[ADMIN] Aucun ennemi à tuer.");
+          break;
+        }
+        enemy.hp = 0;
+        addLog("[ADMIN] Ennemi actuel tué.");
+        Combat.renderEnemy();
+        Combat.checkEndOfBattle();
+        break;
+      }
+
+      case "spawn": {
+        const d = gameState.dungeon;
+        if (!d) {
+          addLog("[ADMIN] Donjon non initialisé.");
+          break;
+        }
+        const sub = (args[0] || "enemy").toLowerCase();
+        const room = Dungeon.getRoom(d.currentX, d.currentY);
+        if (!room) {
+          addLog("[ADMIN] Salle actuelle introuvable.");
+          break;
+        }
+
+        if (sub === "boss") {
+          room.isBoss = true;
+          room.cleared = false;
+          addLog("[ADMIN] Salle actuelle transformée en salle de Boss.");
+        } else {
+          room.cleared = false;
+          room.isBoss = false;
+          addLog("[ADMIN] Salle actuelle préparée pour un ennemi normal.");
+        }
+        Dungeon.renderMinimap();
+        Combat.startBattle();
+        break;
+      }
+
+      default:
+        addLog(
+          `[ADMIN] Commande inconnue : ${action}. Tape /admin help pour la liste des commandes.`
+        );
+        break;
+    }
+  }
+
+  // Double-clic sur le journal pour entrer une commande admin
+  if (logDiv) {
+    logDiv.addEventListener("dblclick", () => {
+      const input = window.prompt(
+        "Commande debug (commence par /admin) :\nExemples : /admin help, /admin potion 3, /admin phoenix 1"
+      );
+      if (input) {
+        handleAdminCommand(input);
+      }
+    });
+  }
+
   // --- BUILDER : création de perso façon D&D ---
   let pendingCustomStats = null;
   let currentBuilderStep = 1;
@@ -1924,7 +2273,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- RESTART / AILE DE PHÉNIX ---
   btnRestart.addEventListener("click", () => {
-    if (!gameState.hero) return;
+    const hero = gameState.hero;
+    if (!hero) return;
+
+    const isDead = hero.hp <= 0;
 
     const hasPhoenix = gameState.inventory.some(
       (it) =>
@@ -1933,19 +2285,36 @@ document.addEventListener("DOMContentLoaded", () => {
           (it.type === "consumable" && it.special === "roomReset"))
     );
 
-    if (!hasPhoenix) {
+    // Héros vivant : pas de Phénix, juste reset complet possible
+    if (!isDead) {
       const full = window.confirm(
-        "Tu ne possèdes pas d'Aile de Phénix.\n\n" +
-          "Seule option : RÉINITIALISER TOUT LE DONJON.\n\n" +
-          "OK = Reset donjon complet\nAnnuler = Annuler"
+        "Tu es encore en vie.\n\n" +
+          "L'Aile de Phénix ne peut être utilisée qu'en cas de mort.\n\n" +
+          "OK = Réinitialiser tout le donjon\nAnnuler = Annuler"
       );
-      if (full) Dungeon.resetFullDungeon();
+      if (full) {
+        Dungeon.resetFullDungeon();
+      }
       return;
     }
 
+    // Héros mort sans Aile
+    if (!hasPhoenix) {
+      const full = window.confirm(
+        "Tu es mort et tu ne possèdes pas d'Aile de Phénix…\n\n" +
+          "Seule option : RÉINITIALISER TOUT LE DONJON.\n\n" +
+          "OK = Reset donjon complet\nAnnuler = Annuler"
+      );
+      if (full) {
+        Dungeon.resetFullDungeon();
+      }
+      return;
+    }
+
+    // Héros mort avec Aile
     const choice = window.confirm(
-      "Tu possèdes une Aile de Phénix !\n\n" +
-        "OK = Réinitialiser uniquement la salle (l'objet sera consommé)\n" +
+      "Tu es mort, mais tu possèdes une Aile de Phénix !\n\n" +
+        "OK = Utiliser l'Aile de Phénix (soin ≈65% HP max + réinitialisation de la salle)\n" +
         "Annuler = Réinitialiser tout le donjon"
     );
 
@@ -1956,11 +2325,26 @@ document.addEventListener("DOMContentLoaded", () => {
           (it.name === "Aile de Phénix" ||
             (it.type === "consumable" && it.special === "roomReset"))
       );
+
       if (index !== -1) {
         gameState.inventory.splice(index, 1);
-        addLog("🔥 L'Aile de Phénix se consume et réinitialise la salle !");
+
+        const maxHp = hero.maxHp || 1;
+        const healAmount = Math.floor(maxHp * 0.65);
+        const previous = hero.hp;
+
+        hero.hp = Math.min(hero.hp + healAmount, maxHp);
+
+        addLog(
+          `🔥 L'Aile de Phénix s'embrase et te rend ${
+            hero.hp - previous
+          } HP (≈65% de tes HP max).`
+        );
+
+        Hero.updateView();
         Inventory.render();
       }
+
       Dungeon.resetCurrentRoom();
     } else {
       Dungeon.resetFullDungeon();
